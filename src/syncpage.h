@@ -33,7 +33,6 @@
 #include <QSpinBox>
 #include <QGroupBox>
 #include <QDateTimeEdit>
-#include <QHttp>
 #include <QBuffer>
 #include <QTextStream>
 #include <QComboBox>

@@ -36,7 +36,7 @@ void MainWindow::changeTemp()
 void AbstractSyncPage::changeAllowedDifference()
 {
     bool ok = false;
-    int a = QInputDialog::getInteger(this, tr("Enter allowed time difference"),
+    int a = QInputDialog::getInt(this, tr("Enter allowed time difference"),
                                       tr("Allowed time difference (in seconds):"), allowed_difference, 0, 86400, 1, &ok);
     if (ok) {
         allowed_difference = a;

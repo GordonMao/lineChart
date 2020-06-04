@@ -107,7 +107,7 @@ void SyncPage::setSyncWidget()
     tw->setMinimumSize(0, 50);
     tw->setShowGrid(false);
     tw->setStatusTip(tr("List of synchronised files and folders"));
-    tw->horizontalHeader()->setResizeMode(QHeaderView::Stretch);
+    tw->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
     tw->setLayoutDirection(Qt::LeftToRight);
     status_table_item = new QTableWidgetItem(tr("Press the \"Sync\" button to start synchronisation"));
     tw->insertRow(0);

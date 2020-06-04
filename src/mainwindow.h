@@ -17,6 +17,10 @@
  Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 ********************************************************************/
 
+#include <QNetworkAccessManager>
+#include <QNetworkReply>
+#include <QPointer>
+
 #include "ui_about.h"
 #include "ui_syncviewitem.h"
 #include "syncpage.h"
@@ -240,7 +244,7 @@ private slots:
 
 // Other
     void changeLanguage(); void langChanged();
-    void checkForUpdates(); void httpRequestFinished(bool);
+    void checkForUpdates(); void httpRequestFinished(QNetworkReply*);
     void about();
     void trayIconActivated(QSystemTrayIcon::ActivationReason reason);
     void trayIconVisible(bool);
@@ -273,7 +277,7 @@ private:
     bool run_hidden;
     bool sched_removed;
     bool no_closedialogue;
-    QHttp * http; QBuffer * http_buffer;
+    QPointer<QNetworkAccessManager> http; QPointer<QNetworkReply> http_buffer;
     QTcpServer * tcp_server; QTcpSocket * tcp_socket;
 
     void closeEvent(QCloseEvent*);
@@ -353,8 +357,6 @@ public:
     QApplication(argc, argv) { init(); };
     MTApplication(int & argc, char ** argv, bool GUIenabled):
     QApplication(argc, argv, GUIenabled) { init(); };
-    MTApplication(int & argc, char ** argv, Type type):
-    QApplication(argc, argv, type) { init(); };
 #ifdef Q_WS_X11
     MTApplication(Display * display, Qt::HANDLE visual = 0, Qt::HANDLE colormap = 0):
     QApplication(display, visual, colormap) { init(); };

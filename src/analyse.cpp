@@ -35,9 +35,9 @@ void SyncPage::goToAnalyse()
     }
     analyse_tree->setHeaderLabels(labels);
     analyse_tree->header()->setStretchLastSection(false);
-    analyse_tree->header()->setResizeMode(0, QHeaderView::Stretch);
+    analyse_tree->header()->setSectionResizeMode(0, QHeaderView::Stretch);
     for (int i = 1; i < labels.count(); ++i) {
-        analyse_tree->header()->setResizeMode(i, QHeaderView::ResizeToContents);
+        analyse_tree->header()->setSectionResizeMode(i, QHeaderView::ResizeToContents);
     }
 
     logs_stw->setCurrentIndex(1);
@@ -62,9 +62,9 @@ void MultisyncPage::goToAnalyse(QAction * action)
     labels << tr("Destination");
     analyse_tree->setHeaderLabels(labels);
     analyse_tree->header()->setStretchLastSection(false);
-    analyse_tree->header()->setResizeMode(0, QHeaderView::Stretch);
+    analyse_tree->header()->setSectionResizeMode(0, QHeaderView::Stretch);
     for (int i = 1; i < labels.count(); ++i) {
-        analyse_tree->header()->setResizeMode(i, QHeaderView::ResizeToContents);
+        analyse_tree->header()->setSectionResizeMode(i, QHeaderView::ResizeToContents);
     }
 
     logs_stw->setCurrentIndex(1);

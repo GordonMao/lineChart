@@ -47,8 +47,7 @@ MainWindow::MainWindow(QSettings * s)
     actionAbout->setMenuRole(QAction::AboutRole);
 #endif
 
-    http = new QHttp(this);
-    http_buffer = new QBuffer(this);
+    http = new QNetworkAccessManager(this);
 
     createActions();
     createTrayIcon();
@@ -67,15 +66,15 @@ MainWindow::MainWindow(QSettings * s)
     temp_path = QString("%1/.Synkron").arg(QDir::homePath());
 
 #ifndef Q_WS_WIN
-    tw_schedules->horizontalHeader()->setResizeMode(QHeaderView::Stretch);
+    tw_schedules->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
     actionShut_down_after_sync->setVisible(false);
 #else
-    tw_schedules->horizontalHeader()->setResizeMode(0, QHeaderView::Stretch);
+    tw_schedules->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Stretch);
 #endif
-    syncs_syncview->horizontalHeader()->setResizeMode(QHeaderView::Stretch);
+    syncs_syncview->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
     syncs_syncview->horizontalHeader()->hide();
     syncs_syncview->verticalHeader()->hide();
-    multisyncs_syncview->horizontalHeader()->setResizeMode(QHeaderView::Stretch);
+    multisyncs_syncview->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
     multisyncs_syncview->horizontalHeader()->hide();
     multisyncs_syncview->verticalHeader()->hide();
 
@@ -97,7 +96,7 @@ MainWindow::MainWindow(QSettings * s)
     actionShow_icons_only = new QAction(tr("Show icons only"), this);
     actionShow_icons_only->setCheckable(true);
 
-    QTranslator translator; translator.load(":/i18n/Synkron-i18n.qm");
+    QTranslator translator; translator.load("Synkron-i18n.qm", ":/i18n/");
     synkron_i18n.insert("English", "English");
     synkron_i18n.insert(translator.translate("LanguageNames", "Slovak"), "Slovak");
     synkron_i18n.insert(translator.translate("LanguageNames", "German"), "German");
@@ -135,7 +134,7 @@ MainWindow::MainWindow(QSettings * s)
     connect(actionRun_hidden, SIGNAL(toggled(bool)), this, SLOT(setRunHidden(bool)));
     connect(actionSync_all, SIGNAL(triggered()), this, SLOT(syncAll()));
     connect(actionCheck_for_updates, SIGNAL(triggered()), this, SLOT(checkForUpdates()));
-    connect(http, SIGNAL(done(bool)), this, SLOT(httpRequestFinished(bool)));
+    connect(http, SIGNAL(finished(QNetworkReply*)), this, SLOT(httpRequestFinished(QNetworkReply*)));
     connect(add_schedule, SIGNAL(released()), this, SLOT(addSchedule()));
     connect(remove_schedule, SIGNAL(released()), this, SLOT(removeSchedule()));
     connect(tw_schedules, SIGNAL(currentCellChanged(int, int, int, int)), this, SLOT(scheduleActivated(int, int, int, int)));

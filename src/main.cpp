@@ -76,10 +76,12 @@ void ClientConnection::read()
     delete this;
 }
 
-void MainWindow::httpRequestFinished(bool error)
+void MainWindow::httpRequestFinished(QNetworkReply *reply)
 {
+    bool error = reply->error() != QNetworkReply::NoError;
     httpRequestFinished_start:
     if (error) {
+        reply->deleteLater();
         switch (QMessageBox::critical(this, tr("Synkron"), tr("Failed to check for updates."), tr("&Try again"), tr("Cancel"), 0, 1)) {
             case 0: // Try again
                 checkForUpdates(); return; break;
@@ -87,7 +89,7 @@ void MainWindow::httpRequestFinished(bool error)
                 return; break;
         }
     }
-    QString str(http_buffer->data()); QTextStream in(&str);
+    QString str(reply->readAll()); QTextStream in(&str);
     if (in.readLine() != "[Synkron.current-version]") { error = true; goto httpRequestFinished_start; }
     QString current_ver = in.readLine();
     if (in.readLine() != "[Synkron.current-version.float]") { error = true; goto httpRequestFinished_start; }
@@ -104,6 +106,7 @@ void MainWindow::httpRequestFinished(bool error)
         out << release_notes << endl << "</p></body></html>";
         QMessageBox::information(this, tr("Synkron"), info);
     }
+    reply->deleteLater();
 }
 
 // --- Connection ---
@@ -165,9 +168,10 @@ About::About(QString ver, QString year/*, QString qtver*/)
 
 void MainWindow::checkForUpdates()
 {
-    delete http_buffer; http_buffer = new QBuffer(this);
-    http->setHost("synkron.sourceforge.net");
-    http->get("/current-version", http_buffer);
+    if (http_buffer) {
+        http_buffer->deleteLater();
+    }
+    http_buffer = http->get(QNetworkRequest(QUrl("http://synkron.sourceforge.net/current-version")));
 }
 
 void MainWindow::changeLanguage()
@@ -259,7 +263,7 @@ int main(int argc, char *argv[])
     if (lang == "C") { lang = "English"; sync_settings->setValue("lang", lang); }
     if (lang != "English") {
         QTranslator * translator = new QTranslator;
-        translator->load(QString(":/i18n/Synkron-%1.qm").arg(lang.replace(" ", "_")));
+        translator->load(QString("Synkron-%1.qm").arg(lang.replace(" ", "_")), QLatin1String(":/i18n/"));
         app.installTranslator(translator);
     }
 

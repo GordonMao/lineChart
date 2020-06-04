@@ -1,5 +1,5 @@
 TEMPLATE = app
-QT += network xml
+QT += network xml widgets
 INCLUDEPATH += src
 HEADERS += src/mainwindow.h \
      src/syncpage.h \
@@ -32,8 +32,7 @@ SOURCES += src/main.cpp \
      src/settings.cpp \
      src/syncdb.cpp \
      src/mainwindow.cpp
-RESOURCES += resources.qrc \
-     i18n.qrc
+RESOURCES += resources.qrc
 DESTDIR = ./
 unix {
      OBJECTS_DIR = .build.unix/
@@ -82,7 +81,10 @@ win32 {
      RCC_DIR = .build.win32/
      RC_FILE = Synkron.rc
 }
-TRANSLATIONS += i18n/Synkron-Arabic.ts \
+
+CONFIG += lrelease embed_translations
+TRANSLATIONS += i18n/Synkron-i18n.ts \
+     i18n/Synkron-Arabic.ts \
      i18n/Synkron-Brazilian_Portuguese.ts \
      i18n/Synkron-Chinese.ts \
      i18n/Synkron-Czech.ts \

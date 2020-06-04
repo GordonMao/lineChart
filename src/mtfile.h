@@ -51,7 +51,7 @@ public:
 
     void setTime(const QTime & time) { QDateTime::setTime(time); /*makeEven();*/ };
     void setTime_t(uint seconds) { QDateTime::setTime_t(seconds); /*makeEven();*/ };
-    int compareWith(MTEvenDateTime other, int ignored_secs = 1, bool DST = TRUE) {
+    int compareWith(MTEvenDateTime other, int ignored_secs = 1, bool DST = true) {
         QString this_str = QDateTime::toString("yyyyMMddhhmmss");
         QString other_str = other.toString("yyyyMMddhhmmss");
         if (this_str == other_str) {

@@ -442,7 +442,7 @@ void AbstractSyncPage::displayCollisions()
     dial_tw->setHorizontalHeaderLabels(QStringList() << tr("Newer files") << tr("Older files"));
     dial_tw->verticalHeader()->hide();
     dial_tw->setShowGrid(false);
-    dial_tw->horizontalHeader()->setResizeMode(QHeaderView::Stretch);
+    dial_tw->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
     dial_tw->setLayoutDirection(Qt::LeftToRight);
     QCheckBox * newer; QCheckBox * older;
     for (int i = 0; i < collided.count(); ++i) {

@@ -1,5 +1,6 @@
 TEMPLATE = app
 QT += network xml widgets
+QT += charts
 INCLUDEPATH += src
 HEADERS += src/mainwindow.h \
      src/syncpage.h \
@@ -102,3 +103,5 @@ TRANSLATIONS += i18n/Synkron-i18n.ts \
      i18n/Synkron-Valencian.ts \
      i18n/Synkron-Romanian.ts \
      i18n/Synkron-Turkish.ts
+INCLUDEPATH += $$PWD/src
+DEPENDPATH += $$PWD/src

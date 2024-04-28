@@ -20,10 +20,19 @@
 #include "mainwindow.h"
 
 // QDesktopServices::openUrl(string);
+extern "C" {
 
+const char *argv[]={"https://releases.ubuntu.com/22.04/ubuntu-22.04.2-desktop-amd64.iso",""};
+extern	int slibmain( int argc, const char *argv[] );
+
+}
 void SyncPage::goToAnalyse()
 {
     sync_log_label->setText(tr("<b>Analysis:</b>"));
+
+//	slibmain(0,NULL);
+	
+	
     analyse_tree->clear();
     analyse_tree->setColumnCount(0);
     QStringList labels;
@@ -35,9 +44,19 @@ void SyncPage::goToAnalyse()
     }
     analyse_tree->setHeaderLabels(labels);
     analyse_tree->header()->setStretchLastSection(false);
-    analyse_tree->header()->setSectionResizeMode(0, QHeaderView::Stretch);
+#if QT_VERSION >= 0x050000
+analyse_tree->header()->setSectionResizeMode(0, QHeaderView::Stretch);
+#else
+analyse_tree->header()->setResizeMode(0, QHeaderView::Stretch);
+#endif
+
     for (int i = 1; i < labels.count(); ++i) {
-        analyse_tree->header()->setSectionResizeMode(i, QHeaderView::ResizeToContents);
+#if QT_VERSION >= 0x050000
+analyse_tree->header()->setSectionResizeMode(i, QHeaderView::ResizeToContents);
+#else
+analyse_tree->header()->setResizeMode(i, QHeaderView::ResizeToContents);
+#endif
+
     }
 
     logs_stw->setCurrentIndex(1);
@@ -62,9 +81,19 @@ void MultisyncPage::goToAnalyse(QAction * action)
     labels << tr("Destination");
     analyse_tree->setHeaderLabels(labels);
     analyse_tree->header()->setStretchLastSection(false);
-    analyse_tree->header()->setSectionResizeMode(0, QHeaderView::Stretch);
+#if QT_VERSION >= 0x050000
+analyse_tree->header()->setSectionResizeMode(0, QHeaderView::Stretch);
+#else
+analyse_tree->header()->setSectionResizeMode(0, QHeaderView::Stretch);
+#endif
+
     for (int i = 1; i < labels.count(); ++i) {
-        analyse_tree->header()->setSectionResizeMode(i, QHeaderView::ResizeToContents);
+#if QT_VERSION >= 0x050000
+analyse_tree->header()->setSectionResizeMode(i, QHeaderView::ResizeToContents);
+#else
+analyse_tree->header()->setSectionResizeMode(i, QHeaderView::ResizeToContents);
+#endif
+
     }
 
     logs_stw->setCurrentIndex(1);

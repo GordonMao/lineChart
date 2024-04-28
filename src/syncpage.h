@@ -33,6 +33,16 @@
 #include <QSpinBox>
 #include <QGroupBox>
 #include <QDateTimeEdit>
+//NOTE: read how to replace QHttp with QtHttp https://qt-project.org/forums/viewthread/24466
+//#include <QtHttp>
+#if QT_VERSION >= 0x050000
+#include <QNetworkAccessManager>
+#include <QNetworkReply>
+#include <QNetworkRequest>
+#else
+#include <QHttp>
+#endif
+
 #include <QBuffer>
 #include <QTextStream>
 #include <QComboBox>
@@ -49,6 +59,18 @@
 #include <QPalette>
 #include <QTreeWidget>
 #include <QDesktopServices>
+#include <QtWidgets/QWidget>
+#include <QtCharts/QPieSeries>
+
+
+#include <QtCharts/QChartView>
+#include <QtCharts/QChart>
+#include <QtCharts/QLegend>
+#include <QtCharts/QPieSeries>
+#include <QtCharts/QPieSlice>
+#include <QtCore/QRandomGenerator>
+#include <QtWidgets/QGridLayout>
+#include <QtCore/QTimer>
 
 #ifdef Q_WS_MAC
 #include <Carbon/Carbon.h>
@@ -67,6 +89,8 @@
 #include "extendedtreewidget.h"
 #include "mtpathdialogue.h"
 #include "mtdictionary.h"
+
+QT_CHARTS_USE_NAMESPACE
 
 class MainWindow;
 class SyncViewItem;
@@ -260,6 +284,10 @@ public slots:
     void createChildItemsByFolder(QString, QStringList, QStringList, bool, bool, bool = false);
     void useTextDatabase(bool);
 
+    void explodeSlice(bool exploded);
+    void updateRotationPai();
+    void updateRotationLine();
+
     void saveAs(QString file_name);
     void load(QDomDocument &, QString);
 
@@ -335,11 +363,42 @@ public:
     QStringList files_to_be_deleted;
     QStringList folders_to_be_created;
     QStringList folders_to_be_deleted;
+
+
+    QList<QPieSeries *> m_donuts;
+
+private:
+
+
+    int localFuncAddWidgetSyncfolders();
+    int localFuncAddWidget2();
+    int localFuncAddWidgetSynclog();
+    int localFuncAddWidgetAdvance();
+    int localFuncAddWidget5();
+//    int localFuncAddWidget6();
+//    int localFuncAddWidget7();
+    int localFuncAddWidgetLine();
+    int localFuncAddWidgetPai();
+    int localFuncAddWidgetAdvanceSub();
+
+
+    QTimer *updateTimer=NULL;
+    QTimer *updateTimer2=NULL;
+
+
+
+    QChartView * mchartView=NULL;
+    QGridLayout * mainglayout=NULL;
+    QHBoxLayout * folders_hlayout = NULL;
+    QGridLayout * hlayout0 = NULL;
+    QSpacerItem * spacerItem = NULL;
+
+
 };
 
 class MultisyncPage : public AbstractSyncPage, private Ui::MultisyncForm
 {
-	Q_OBJECT
+    Q_OBJECT
 
 public:
     MultisyncPage(MainWindow *parent = 0);

@@ -46,7 +46,7 @@ SyncSchedule * MainWindow::addSchedule(QString name)
 
 void MainWindow::removeSchedule()
 {
-    if(tw_schedules->currentItem()==0) { QMessageBox::warning(this, tr("Synkron"), tr("No schedule selected.")); return; }
+    if(tw_schedules->currentItem()==NULL) { QMessageBox::warning(this, tr("Synkron"), tr("No schedule selected.")); return; }
     int m = tw_schedules->currentRow(); tw_schedules->clearSelection(); schedGroupBox->setEnabled(false); sched_removed = true;
     QMessageBox msgBox; msgBox.setText(tr("Are you sure you want to remove the selected schedule from the list?"));
     msgBox.setWindowTitle(QString("Synkron")); msgBox.setIcon(QMessageBox::Question);

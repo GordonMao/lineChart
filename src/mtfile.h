@@ -34,10 +34,10 @@
 class MTFile : public QFile
 {
 public:
-	MTFile(QString);
-	MTFile(QString, QObject *);
+    MTFile(QString);
+    MTFile(QString, QObject *);
     bool copy(QString);
-	bool touch(QApplication *);
+    bool touch(QApplication *);
     bool openAndTouch(QString);
 };
 

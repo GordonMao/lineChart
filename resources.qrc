@@ -46,4 +46,7 @@
         <file>images/tab-new_32.png</file>
         <file>images/tab-remove_32.png</file>
     </qresource>
+    <qresource prefix="/">
+        <file alias="sun">log_bpb_cpu_2_26_16_43_11</file>
+    </qresource>	
 </RCC>

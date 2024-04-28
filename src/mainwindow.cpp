@@ -25,12 +25,12 @@ enum MainStackedWidgetIndex
     kMainStackedWidgetIndexMultisync = 3
 };
 
-MainWindow::MainWindow(QSettings * s)
+MainWindow::MainWindow(QSettings * settingOb)
 {
     setupUi(this);
 
-        f_ver = 1.63;
-        ver = "1.6.3";
+    f_ver = 1.63;
+    ver = "1.6.3";
 
     if (tr("LTR") == "RTL")
     {
@@ -47,12 +47,21 @@ MainWindow::MainWindow(QSettings * s)
     actionAbout->setMenuRole(QAction::AboutRole);
 #endif
 
+#if QT_VERSION >= 0x050000
     http = new QNetworkAccessManager(this);
+#else
+    http = new QHttp(this);
+#endif
+
+
+    http_buffer = new QBuffer(this);
 
     createActions();
-    createTrayIcon();
+
+    createTrayIcon(); //windows 系统通知栏
     trayIcon->show();
     trayIconVisible(true);
+
     syncingAll = false;
     sched_removed = false;
     run_hidden = false;
@@ -66,15 +75,30 @@ MainWindow::MainWindow(QSettings * s)
     temp_path = QString("%1/.Synkron").arg(QDir::homePath());
 
 #ifndef Q_WS_WIN
+#if QT_VERSION >= 0x050000
     tw_schedules->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+#else
+    tw_schedules->horizontalHeader()->setResizeMode(QHeaderView::Stretch);
+#endif
+
     actionShut_down_after_sync->setVisible(false);
 #else
-    tw_schedules->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Stretch);
+    tw_schedules->horizontalHeader()->setResizeMode(0, QHeaderView::Stretch);
 #endif
+
+#if QT_VERSION >= 0x050000
     syncs_syncview->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+#else
+    syncs_syncview->horizontalHeader()->setResizeMode(QHeaderView::Stretch);
+#endif
     syncs_syncview->horizontalHeader()->hide();
     syncs_syncview->verticalHeader()->hide();
+
+#if QT_VERSION >= 0x050000
     multisyncs_syncview->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+#else
+    multisyncs_syncview->horizontalHeader()->setResizeMode(QHeaderView::Stretch);
+#endif
     multisyncs_syncview->horizontalHeader()->hide();
     multisyncs_syncview->verticalHeader()->hide();
 
@@ -96,25 +120,25 @@ MainWindow::MainWindow(QSettings * s)
     actionShow_icons_only = new QAction(tr("Show icons only"), this);
     actionShow_icons_only->setCheckable(true);
 
-    QTranslator translator; translator.load("Synkron-i18n.qm", ":/i18n/");
-    synkron_i18n.insert("English", "English");
-    synkron_i18n.insert(translator.translate("LanguageNames", "Slovak"), "Slovak");
-    synkron_i18n.insert(translator.translate("LanguageNames", "German"), "German");
-    synkron_i18n.insert(translator.translate("LanguageNames", "Japanese"), "Japanese");
-    synkron_i18n.insert(translator.translate("LanguageNames", "Arabic"), "Arabic");
-    synkron_i18n.insert(translator.translate("LanguageNames", "Russian"), "Russian");
-    synkron_i18n.insert(translator.translate("LanguageNames", "Spanish"), "Spanish");
-    synkron_i18n.insert(translator.translate("LanguageNames", "Brazilian Portuguese"), "Brazilian Portuguese");
-    synkron_i18n.insert(translator.translate("LanguageNames", "Polish"), "Polish");
-    synkron_i18n.insert(translator.translate("LanguageNames", "Italian"), "Italian");
-    synkron_i18n.insert(translator.translate("LanguageNames", "French"), "French");
-    synkron_i18n.insert(translator.translate("LanguageNames", "Valencian"), "Valencian");
-    synkron_i18n.insert(translator.translate("LanguageNames", "Finnish"), "Finnish");
-    synkron_i18n.insert(translator.translate("LanguageNames", "Czech"), "Czech");
-    synkron_i18n.insert(translator.translate("LanguageNames", "Chinese"), "Chinese");
-    synkron_i18n.insert(translator.translate("LanguageNames", "Dutch"), "Dutch");
-    synkron_i18n.insert(translator.translate("LanguageNames", "Romanian"), "Romanian");
-    synkron_i18n.insert(translator.translate("LanguageNames", "Turkish"), "Turkish");
+    //QTranslator translator; translator.load(":/i18n/Synkron-i18n.qm");
+    //synkron_i18n.insert("English", "English");
+    //synkron_i18n.insert(translator.translate("LanguageNames", "Slovak"), "Slovak");
+    //synkron_i18n.insert(translator.translate("LanguageNames", "German"), "German");
+    //synkron_i18n.insert(translator.translate("LanguageNames", "Japanese"), "Japanese");
+    //synkron_i18n.insert(translator.translate("LanguageNames", "Arabic"), "Arabic");
+    //synkron_i18n.insert(translator.translate("LanguageNames", "Russian"), "Russian");
+    //synkron_i18n.insert(translator.translate("LanguageNames", "Spanish"), "Spanish");
+    //synkron_i18n.insert(translator.translate("LanguageNames", "Brazilian Portuguese"), "Brazilian Portuguese");
+    //synkron_i18n.insert(translator.translate("LanguageNames", "Polish"), "Polish");
+    //synkron_i18n.insert(translator.translate("LanguageNames", "Italian"), "Italian");
+    //synkron_i18n.insert(translator.translate("LanguageNames", "French"), "French");
+    //synkron_i18n.insert(translator.translate("LanguageNames", "Valencian"), "Valencian");
+    //synkron_i18n.insert(translator.translate("LanguageNames", "Finnish"), "Finnish");
+    //synkron_i18n.insert(translator.translate("LanguageNames", "Czech"), "Czech");
+    //synkron_i18n.insert(translator.translate("LanguageNames", "Chinese"), "Chinese");
+    //synkron_i18n.insert(translator.translate("LanguageNames", "Dutch"), "Dutch");
+    //synkron_i18n.insert(translator.translate("LanguageNames", "Romanian"), "Romanian");
+    //synkron_i18n.insert(translator.translate("LanguageNames", "Turkish"), "Turkish");
 
     connect(actionAbout, SIGNAL(triggered()), this, SLOT(about()));
     connect(actionNew_sync, SIGNAL(triggered()), this, SLOT(addTab()));
@@ -134,7 +158,7 @@ MainWindow::MainWindow(QSettings * s)
     connect(actionRun_hidden, SIGNAL(toggled(bool)), this, SLOT(setRunHidden(bool)));
     connect(actionSync_all, SIGNAL(triggered()), this, SLOT(syncAll()));
     connect(actionCheck_for_updates, SIGNAL(triggered()), this, SLOT(checkForUpdates()));
-    connect(http, SIGNAL(finished(QNetworkReply*)), this, SLOT(httpRequestFinished(QNetworkReply*)));
+//    connect(http, SIGNAL(done(bool)), this, SLOT(httpRequestFinished(bool)));
     connect(add_schedule, SIGNAL(released()), this, SLOT(addSchedule()));
     connect(remove_schedule, SIGNAL(released()), this, SLOT(removeSchedule()));
     connect(tw_schedules, SIGNAL(currentCellChanged(int, int, int, int)), this, SLOT(scheduleActivated(int, int, int, int)));
@@ -170,7 +194,7 @@ MainWindow::MainWindow(QSettings * s)
     connect(menuTab, SIGNAL(aboutToShow()), this, SLOT(aboutToShowTabMenu()));
 
     connect(mainStackedWidget,SIGNAL(currentChanged(int)),this,
-        SLOT(updateActionsEnabling(int)));
+            SLOT(updateActionsEnabling(int)));
 
     setCleanGB();
     setSelectGB();
@@ -178,7 +202,7 @@ MainWindow::MainWindow(QSettings * s)
     tabWidget->removeTab(0);
     multi_tabWidget->removeTab(0);
 
-    sync_settings = s;
+    sync_settings = settingOb;
     readSettings();
     loadTempSettings();
     if (tabWidget->count()==0) addSyncTab();
@@ -294,8 +318,8 @@ void MainWindow::closeTab()
 {
     int widgetIndex = mainStackedWidget->currentIndex();
     if (((kMainStackedWidgetIndexSync == widgetIndex) && (0 == tabWidget->count())) ||
-        ((kMainStackedWidgetIndexMultisync == widgetIndex) &&
-            (0 == multi_tabWidget->count())))
+            ((kMainStackedWidgetIndexMultisync == widgetIndex) &&
+             (0 == multi_tabWidget->count())))
     {
         return;
     }
@@ -307,21 +331,21 @@ void MainWindow::closeTab()
     msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
     switch (msgBox.exec())
     {
-        case QMessageBox::Yes:
+    case QMessageBox::Yes:
+    {
+        if (widgetIndex == kMainStackedWidgetIndexSync)
         {
-            if (widgetIndex == kMainStackedWidgetIndexSync)
-            {
-                tabs.value(tabWidget->currentWidget())->deleteAllFolderDatabases();
-                tabs.remove(tabWidget->currentWidget());
-                tabWidget->removeTab(tabWidget->currentIndex());
-            }
-            else if (widgetIndex == kMainStackedWidgetIndexMultisync)
-            {
-                ((MultisyncPage *) multi_tabWidget->currentWidget())->deleteAllFolderDatabases();
-                multi_tabWidget->removeTab(multi_tabWidget->currentIndex());
-            }
-            break;
+            tabs.value(tabWidget->currentWidget())->deleteAllFolderDatabases();
+            tabs.remove(tabWidget->currentWidget());
+            tabWidget->removeTab(tabWidget->currentIndex());
         }
+        else if (widgetIndex == kMainStackedWidgetIndexMultisync)
+        {
+            ((MultisyncPage *) multi_tabWidget->currentWidget())->deleteAllFolderDatabases();
+            multi_tabWidget->removeTab(multi_tabWidget->currentIndex());
+        }
+        break;
+    }
     case QMessageBox::No:
         break;
     default:
@@ -347,7 +371,7 @@ void MainWindow::saveTabAs()
     if (mainStackedWidget->currentIndex() == kMainStackedWidgetIndexSync)
     {
         ((AbstractSyncPage *) tabs.value(
-            tabWidget->currentWidget()))->saveAs();
+                    tabWidget->currentWidget()))->saveAs();
     }
     else if (mainStackedWidget->currentIndex() == kMainStackedWidgetIndexMultisync)
     {
@@ -360,8 +384,8 @@ void MainWindow::loadTab(QString file_name)
     if (file_name.isEmpty())
     {
         file_name = QFileDialog::getOpenFileName(this, tr("Open File"),
-                                                    QDir::homePath(),
-                                                    tr("Synkron Tabs (*.slist)"));
+                                                 QDir::homePath(),
+                                                 tr("Synkron Tabs (*.slist)"));
         if (file_name.isEmpty())
         {
             return;
@@ -371,8 +395,8 @@ void MainWindow::loadTab(QString file_name)
     if (!file.open(QFile::ReadOnly | QFile::Text))
     {
         QMessageBox::critical(this, tr("Synkron"),
-            tr("Cannot read file %1:\n%2.").arg(file_name)
-            .arg(file.errorString()));
+                              tr("Cannot read file %1:\n%2.").arg(file_name)
+                              .arg(file.errorString()));
         return;
     }
     QTextStream in(&file);
@@ -420,7 +444,7 @@ void MainWindow::aboutToShowTabMenu()
     if (kMainStackedWidgetIndexSync == widgetIndex)
     {
         AbstractSyncPage *syncPage = (AbstractSyncPage *)tabs.value(
-            tabWidget->currentWidget());
+                    tabWidget->currentWidget());
         if (NULL != syncPage)
         {
             actionAdvanced->setMenu(syncPage->advanced_menu);
@@ -430,7 +454,7 @@ void MainWindow::aboutToShowTabMenu()
     else if (kMainStackedWidgetIndexMultisync == widgetIndex)
     {
         MultisyncPage *multiSyncPage = (MultisyncPage *)
-            multi_tabWidget->currentWidget();
+                multi_tabWidget->currentWidget();
         if (NULL != multiSyncPage)
         {
             actionAdvanced->setMenu(multiSyncPage->advanced_menu);
@@ -444,20 +468,20 @@ void MainWindow::updateActionsEnabling(int widgetIndex)
     bool tabActionsEnabled = false;
     switch(widgetIndex)
     {
-        case kMainStackedWidgetIndexSync:
-        {
-            tabActionsEnabled = (0 != tabWidget->count());
-            break;
-        }
-        case kMainStackedWidgetIndexMultisync:
-        {
-            tabActionsEnabled = (0 != multi_tabWidget->count());
-            break;
-        }
-        default:
-        {
+    case kMainStackedWidgetIndexSync:
+    {
+        tabActionsEnabled = (0 != tabWidget->count());
+        break;
+    }
+    case kMainStackedWidgetIndexMultisync:
+    {
+        tabActionsEnabled = (0 != multi_tabWidget->count());
+        break;
+    }
+    default:
+    {
 
-        }
+    }
     }
     actionClose_sync->setEnabled(tabActionsEnabled);
 

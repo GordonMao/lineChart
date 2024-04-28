@@ -76,20 +76,18 @@ void ClientConnection::read()
     delete this;
 }
 
-void MainWindow::httpRequestFinished(QNetworkReply *reply)
+void MainWindow::httpRequestFinished(bool error)
 {
-    bool error = reply->error() != QNetworkReply::NoError;
-    httpRequestFinished_start:
+httpRequestFinished_start:
     if (error) {
-        reply->deleteLater();
         switch (QMessageBox::critical(this, tr("Synkron"), tr("Failed to check for updates."), tr("&Try again"), tr("Cancel"), 0, 1)) {
-            case 0: // Try again
-                checkForUpdates(); return; break;
-            case 1: // Cancel
-                return; break;
+        case 0: // Try again
+            checkForUpdates(); return; break;
+        case 1: // Cancel
+            return; break;
         }
     }
-    QString str(reply->readAll()); QTextStream in(&str);
+    QString str(http_buffer->data()); QTextStream in(&str);
     if (in.readLine() != "[Synkron.current-version]") { error = true; goto httpRequestFinished_start; }
     QString current_ver = in.readLine();
     if (in.readLine() != "[Synkron.current-version.float]") { error = true; goto httpRequestFinished_start; }
@@ -106,7 +104,6 @@ void MainWindow::httpRequestFinished(QNetworkReply *reply)
         out << release_notes << endl << "</p></body></html>";
         QMessageBox::information(this, tr("Synkron"), info);
     }
-    reply->deleteLater();
 }
 
 // --- Connection ---
@@ -121,7 +118,7 @@ void MainWindow::about ()
 About::About(QString ver, QString year/*, QString qtver*/)
 {
     setupUi(this);
-
+    //NOTE: Really stupid way to appaend the text, you can use the UI instead!
     QString about = "<p style=\"font-family: sans-serif; font-style:italic;\"><span style=\"font-size:12pt;\">Synkron</span><br>";
     about.append("<span style=\"font-size:8pt;\">");
     about.append(tr("Version"));
@@ -168,10 +165,17 @@ About::About(QString ver, QString year/*, QString qtver*/)
 
 void MainWindow::checkForUpdates()
 {
-    if (http_buffer) {
-        http_buffer->deleteLater();
-    }
-    http_buffer = http->get(QNetworkRequest(QUrl("http://synkron.sourceforge.net/current-version")));
+    delete http_buffer;
+
+#if QT_VERSION >= 0x050000
+    QByteArray bArr = http->get(QNetworkRequest(QUrl("http://synkron.sourceforge.net/current-version")))->readAll();
+    http_buffer = new QBuffer(&bArr);
+#else
+    http_buffer = new QBuffer(this);
+    http->setHost("synkron.sourceforge.net");
+    http->get("/current-version", http_buffer);
+#endif
+
 }
 
 void MainWindow::changeLanguage()
@@ -245,14 +249,19 @@ int main(int argc, char *argv[])
     app.setApplicationName("Synkron");
 
     QFileInfo file_info (app.arguments().at(0));
-    QDir dir (file_info.dir()); QSettings * sync_settings;
+    QDir dir (file_info.dir());
+	QSettings * sync_settings;
+	
 #ifdef PORTABLE_APP
     dir.cdUp(); dir.cdUp();
     dir.cd("Data"); dir.cd("settings");
 #endif
-    if (dir.exists("Synkron.ini")) {
+    if (dir.exists("Synkron.ini")) 
+	{
         sync_settings = new QSettings (dir.absoluteFilePath("Synkron.ini"), QSettings::IniFormat);
-    } else {
+    } 
+	else 
+	{
         sync_settings = new QSettings (QSettings::IniFormat, QSettings::UserScope, "Matus Tomlein", "Synkron");
     }
     QString lang = sync_settings->value("lang").toString();
@@ -263,7 +272,7 @@ int main(int argc, char *argv[])
     if (lang == "C") { lang = "English"; sync_settings->setValue("lang", lang); }
     if (lang != "English") {
         QTranslator * translator = new QTranslator;
-        translator->load(QString("Synkron-%1.qm").arg(lang.replace(" ", "_")), QLatin1String(":/i18n/"));
+        translator->load(QString(":/i18n/Synkron-%1.qm").arg(lang.replace(" ", "_")));
         app.installTranslator(translator);
     }
 
